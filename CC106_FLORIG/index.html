@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Expense Tracker</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        background-color: #f5e1fd;
+      }
+      @keyframes glow {
+        0% {
+          color: #4b0082;
+          text-shadow: 0px 0px 5px rgba(75, 0, 130, 0.5);
+        }
+        50% {
+          color: #8a2be2;
+          text-shadow: 0px 0px 20px rgba(138, 43, 226, 0.8);
+        }
+        100% {
+          color: #4b0082;
+          text-shadow: 0px 0px 5px rgba(75, 0, 130, 0.5);
+        }
+      }
+
+      h1 {
+        text-align: center;
+        animation: glow 3s infinite ease-in-out;
+      }
+      .container {
+        background: #ce9dd9;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0px 0px 10px gray;
+        width: 400px;
+      }
+      .form-group {
+        margin-bottom: 10px;
+      }
+      .transaction-container {
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0px 0px 10px gray;
+        width: 400px;
+      }
+      h3 {
+        margin-bottom: 20px;
+      }
+      input {
+        margin: 5px;
+        padding: 3px;
+        border-radius: 5px;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+      }
+      th,
+      td {
+        border: 1px solid black;
+        padding: 8px;
+        text-align: left;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Monthly Expense Calculator</h1>
+      <p>Initial Budget: <span id="initial-budget">P 0.00</span></p>
+      <p>Income: + <span id="income">P 0.00</span></p>
+      <p>Expense: - <span id="expense">P 0.00</span></p>
+      <p>Total Balance: <span id="balance">P 0.00</span></p>
+
+      <h3>| Set Initial Budget |</h3>
+      <div class="form-group">
+        <label>Initial Budget:</label>
+        <input type="number" id="initialBudget" />
+      </div>
+      <button onclick="setInitialBudget()">Set Budget</button>
+
+      <h3>| Add Transaction |</h3>
+      <div class="form-group">
+        <label>Name:</label>
+        <br />
+        <input type="text" id="name" />
+      </div>
+      <div class="form-group">
+        <label>Category:</label>
+        <br />
+        <input type="text" id="category" />
+      </div>
+      <div class="form-group">
+        <label>Type:</label>
+        <input type="radio" name="type" value="income" checked /> Income
+        <input type="radio" name="type" value="expense" /> Expense
+      </div>
+      <div class="form-group">
+        <label>Amount:</label>
+        <input type="number" id="amount" />
+      </div>
+      <button onclick="addTransaction()">Submit</button>
+      <div class="transaction">
+        <h3>Transaction List:</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Category</th>
+              <th>Type</th>
+              <th>Amount</th>
+              <th>Balance</th>
+            </tr>
+          </thead>
+          <tbody id="transaction-list"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <script>
+      //object
+      let calculate = {
+        //properties
+        income: 0,
+        expense: 0,
+        initialBudget: 0,
+        balance: 0,
+
+        //methods -functions
+        setInitialBudget() {
+          this.initialBudget =
+            parseFloat(document.getElementById("initialBudget").value) || 0;
+          this.balance = this.initialBudget;
+          document.getElementById(
+            "initial-budget"
+          ).innerText = `P ${this.initialBudget.toFixed(2)}`;
+
+          //initial budget |transaction list
+          this.addTransactionToList(
+            "Initial Budget",
+            "Initial Budget",
+            "Budget",
+            this.initialBudget
+          );
+          this.updateBalance();
+        },
+        //methods
+        addTransaction() {
+          let name = document.getElementById("name").value.trim();
+          let category = document.getElementById("category").value.trim();
+          let amount = parseFloat(document.getElementById("amount").value);
+          let type = document.querySelector('input[name="type"]:checked').value;
+
+          if (!name || !category || isNaN(amount) || amount <= 0) {
+            alert("Please fill out all fields correctly.");
+            return;
+          }
+
+          if (type === "expense" && amount > this.balance) {
+            alert("Insufficient funds!");
+            return;
+          }
+
+          //update balance
+          if (type === "income") {
+            this.income += amount;
+            this.balance += amount;
+          } else {
+            this.expense += amount;
+            this.balance -= amount;
+          }
+
+          //transaction to list
+          this.addTransactionToList(name, category, type, amount);
+          this.updateBalance();
+        },
+
+        addTransactionToList(name, category, type, amount) {
+          let table = document.getElementById("transaction-list");
+          let row = table.insertRow();
+          row.insertCell(0).innerText = name;
+          row.insertCell(1).innerText = category;
+          row.insertCell(2).innerText =
+            type.charAt(0).toUpperCase() + type.slice(1);
+          row.insertCell(3).innerText = `P ${amount.toFixed(2)}`;
+          row.insertCell(4).innerText = `P ${this.balance.toFixed(2)}`;
+        },
+
+        updateBalance() {
+          document.getElementById(
+            "income"
+          ).innerText = `P ${this.income.toFixed(2)}`;
+          document.getElementById(
+            "expense"
+          ).innerText = `P ${this.expense.toFixed(2)}`;
+          document.getElementById(
+            "balance"
+          ).innerText = `P ${this.balance.toFixed(2)}`;
+        },
+      };
+
+      //event listeners to buttons
+      //Calls the respective "setInitialBudget() and addTransaction()"  methods when the buttons are clicked.
+      document.addEventListener("DOMContentLoaded", function () {
+        document.querySelector("button[onclick='setInitialBudget()']").onclick =
+          function () {
+            calculate.setInitialBudget();
+          };
+        document.querySelector("button[onclick='addTransaction()']").onclick =
+          function () {
+            calculate.addTransaction();
+          };
+      });
+    </script>
+  </body>
+</html>
